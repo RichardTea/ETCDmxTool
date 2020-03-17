@@ -46,10 +46,14 @@ public:
 
     enum GenericParamDataTypeFlags
     {
-        GenericDataNumber   = 0x01,
-        GenericDataText     = 0x02,
-        GenericDataBitset   = 0x04,
-        GenericDataBool     = 0x08
+        GenericDataUnsigned     = 1 << 0,   // Unsigned integer
+        GenericDataSigned       = 1 << 1,   // Signed integer
+        GenericDataUnsignedHex  = 1 << 2,   // Display as unsigned hex
+        GenericDataText         = 1 << 3,
+        GenericDataBitset       = 1 << 4,
+        GenericDataBool         = 1 << 5,
+
+        GenericDataNumber = GenericDataUnsigned |  GenericDataSigned | GenericDataUnsignedHex,
     };
 
     static void dissectGenericData(const Packet &p, QTreeWidgetItem *parent, int offset, int pdLength, quint8 dataTypeFlags = GenericDataNumber | GenericDataText | GenericDataBitset);

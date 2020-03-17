@@ -151,6 +151,24 @@ QString Util::displayBits(const Packet &p, int offset, int pdLength)
     return result;
 }
 
+template<typename UT, typename ST>
+void addGenericNumber(UT pd, ST pds, QTreeWidgetItem *parent, int offset, quint8 dataTypeFlags)
+{
+    QStringList results;
+    if (dataTypeFlags & Util::GenericDataUnsigned)
+        results.append(QString::number(pd, 10));
+    if (dataTypeFlags & Util::GenericDataSigned)
+        results.append(QString::number(pds, 10));
+    if (dataTypeFlags & Util::GenericDataUnsignedHex)
+        results.append(QStringLiteral("0x") + QString::number(pd, 16).toUpper());
+
+    QTreeWidgetItem *i = new QTreeWidgetItem();
+    i->setText(0, "Number");
+    i->setText(1, results.join(QStringLiteral(" / ")));
+    Util::setPacketByteHighlight(i, offset, sizeof(pd));
+    parent->addChild(i);
+}
+
 void Util::dissectGenericData(const Packet &p, QTreeWidgetItem *parent, int offset, int pdLength, quint8 dataTypeFlags)
 {
     if (pdLength == 0) return; // No data
@@ -163,31 +181,19 @@ void Util::dissectGenericData(const Packet &p, QTreeWidgetItem *parent, int offs
         {
             quint8 pd = p[offset];
             qint8 *pds = reinterpret_cast<qint8*>(&pd);
-            QTreeWidgetItem *i = new QTreeWidgetItem();
-            i->setText(0, "Number");
-            i->setText(1, QString("%1 / %2").arg(pd).arg(*pds));
-            Util::setPacketByteHighlight(i, offset, pdLength);
-            parent->addChild(i);
+            addGenericNumber(pd, *pds, parent, offset, dataTypeFlags);
         } break;
         case 2:
         {
             quint16 pd = unpackU16(p, offset);
             qint16 *pds = reinterpret_cast<qint16*>(&pd);
-            QTreeWidgetItem *i = new QTreeWidgetItem();
-            i->setText(0, "Number");
-            i->setText(1, QString("%1 / %2").arg(pd).arg(*pds));
-            Util::setPacketByteHighlight(i, offset, pdLength);
-            parent->addChild(i);
+            addGenericNumber(pd, *pds, parent, offset, dataTypeFlags);
         } break;
         case 4:
         {
             quint32 pd = unpackU32(p, offset);
             qint32 *pds = reinterpret_cast<qint32*>(&pd);
-            QTreeWidgetItem *i = new QTreeWidgetItem();
-            i->setText(0, "Number");
-            i->setText(1, QString("%1 / %2").arg(pd).arg(*pds));
-            Util::setPacketByteHighlight(i, offset, pdLength);
-            parent->addChild(i);
+            addGenericNumber(pd, *pds, parent, offset, dataTypeFlags);
         } break;
         default: ;
         }

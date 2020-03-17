@@ -90,8 +90,16 @@ QVariant RdmPlugin::getInfo(const Packet &p)
             break;
         }
 
-        quint16 paramId = p[RDM_MESSAGE_BLOCK + RDM_PARAMETER_ID] << 8 | p[RDM_MESSAGE_BLOCK + RDM_PARAMETER_ID + 1];
+        quint16 paramId = Util::unpackU16(p, RDM_MESSAGE_BLOCK + RDM_PARAMETER_ID);
         sInfo.append(Util::paramIdToString(paramId));
+
+        // GET PARAMETER_DESCRIPTION should mention which PID is being requested
+        if (E120_PARAMETER_DESCRIPTION == paramId)
+        {
+           quint16 aboutPid = Util::unpackU16(p, RDM_MESSAGE_BLOCK + RDM_PARAMETER_DATA);
+           sInfo = sInfo + QStringLiteral(" for ") + QString::number(aboutPid, 16).toUpper();
+        }
+
     }
 //        switch (role)
 //        {
@@ -148,7 +156,8 @@ void RdmPlugin::dissectPacket(const Packet &p, QTreeWidgetItem *parent)
         i = new QTreeWidgetItem();
         i->setText(0, QObject::tr("Start Code"));
         Util::setPacketByteHighlight(i, 0, 1);
-        switch ((quint8)p.at(0)) {
+        switch (Util::unpackU8(p, 0))
+        {
         case E110_SC::RDM:
             i->setText(1, QObject::tr("RDM"));
             parent->addChild(i);

@@ -305,7 +305,7 @@ void dissectMessageBlock(const Packet &p, QTreeWidgetItem *parent)
 	parent->addChild(i);
 	
    // Parameter Id
-	quint16 paramId = p[RDM_MESSAGE_BLOCK + RDM_PARAMETER_ID] << 8 | p[RDM_MESSAGE_BLOCK + RDM_PARAMETER_ID + 1] ;
+    quint16 paramId = Util::unpackU16(p, RDM_MESSAGE_BLOCK + RDM_PARAMETER_ID);
 	i = new QTreeWidgetItem();
 	i->setText(0, "Parameter Id");
 	i->setText(1, QString("%1 (%2)")
@@ -397,10 +397,13 @@ void dissectMessageBlock(const Packet &p, QTreeWidgetItem *parent)
         }
         break;
     case E120_PARAMETER_DESCRIPTION:
-        if (cc == E120_GET_COMMAND_RESPONSE)
+        switch (cc)
         {
+        case E120_GET_COMMAND_RESPONSE:
             dissectParameterDescriptionReply(p, pidItem, RDM_MESSAGE_BLOCK + RDM_PARAMETER_DATA, pdl);
             return;
+        case E120_GET_COMMAND: genericDataType = Util::GenericDataUnsignedHex; break;
+        default: Util::setItemInvalid(pidItem);
         }
         break;
 
